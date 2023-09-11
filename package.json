@@ -1,0 +1,5 @@
+{
+    "dependencies": {
+        "glob-to-regexp": "^0.4.1"
+    }
+}

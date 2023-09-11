@@ -1,0 +1,43 @@
+{ "type": "object",
+    "properties": {
+        "id": { "type": "string", "description": "The unique identifier of the package." },
+        "name": { "type": "string", "description": "The name of the package." },
+        "description" : { "oneOf": [ 
+            { "type": "string" },
+            { "type": "null" }
+        ], "description": "The description of the package.", "default": null },
+        "version" : { "type": "string", "description": "The version of the package." },
+        "installPath": { "type": "string", "description": "Where the package should be unpackaged, may also include envornment variable, some special ones include:\n* appdata : CPM's appdata folder\n* package-id : the ID of the package\n* temp : will create a new temporary folder and return its path", "default": "$appdata$/packages/$package-id$" },
+        "installScript": { "oneOf": [
+            { "type": "string" },
+            { "type" : "null" }
+        ], "description": "A command to be ran where the package was extracting", "default": null },
+        "permissions": {
+            "type": "object",
+            "additionalProperties": { "oneOf": [ { "type": "number" }, { "type": "string" }]},
+            "description": "An object where each key is a glob pattern to match files, and each value being the permissions to apply, which can either be a number or a string that will be parsed as one."
+        },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "Tags that can be used to improve search results for this package." },
+        "bin": { "type": "array", "items": {
+            "oneOf": [
+                { "type": "object", "properties": {
+                    "name": { "type": "string", "description": "The name of the file." },
+                    "sympath": { "type": "string", "description": "The path that the symlink will point to." }
+                }, "description": "Creates a symlink that wil de placed inside of the path with the specified name and linking to the specified path." },
+                { "type": "object", "properties": {
+                    "name": { "type": "string", "description": "The name of the file." },
+                    "cmd": { "type": "string", "description": "The command that will be attached to the file." }
+                }, "description": "Creates a script that will be placed inside of the path with the specified name and containing the specified command." },
+                { "type": "object", "properties": {
+                    "name": { "type": "string", "description": "The name of the file." },
+                    "file": { "type": "string", "description": "The file to be copied/moved." },
+                    "action" : { "enum": [ "copy", "move" ], "default": "move" }
+                }, "description": "Copies / moves an existing file that will be placed inside of the path with a new name." }
+            ] 
+        } , "default": [], "description": "A list of binary files to create that will be placed in the path after the install script has completed." },
+        "dependencies": { "oneOf": [{"type":"array","items":{"type":"string"}},{"type":"array","items":{"type":"array","items":{"type":"string"}}}], "description": "An array of package names that are required and that will be installed before this one, they may also be a list of fallback packages where the first one is the default one, and each successive one will attemp an installation if the previous failed, ultimately cancelling the package's installation if not all dependencies could be installed.", "default":[] },
+        "os": { "type":"array", "items":{"type":"string"}, "description": "A list of glob patterns that the host os will be matched against to determine whether the package is compatible. The os will have the form `OSNAME-ARCH`.", "default":["*"] },
+        "include": { "type": "array", "items": {"type": "string"}, "description": "A list of glob patterns that match only files to include in the package." },
+        "exclude": { "type": "array", "items": {"type": "string"}, "description": "A list of glob patterns that match only files not to include in the package." }
+    }
+}
