@@ -383,7 +383,7 @@ else if (args[0] == 'install') {
                             if (process.platform == 'win32')
                                 fs.writeFileSync(bin_path,`@`+bin.cmd?.replace(/\%package_path\%/g,install_path),'utf-8');
                             else {
-                                fs.writeFileSync(bin_path,bin.cmd?.replace(/\$package_path/g,install_path),'utf-8');
+                                fs.writeFileSync(bin_path,'#!/usr/bin/env bash\n'+bin.cmd?.replace(/\%package_path\%/g,install_path),'utf-8');
                                 fs.chmodSync(bin_path,bin.mod??0o744);
                             }
                             let bins = JSON.parse(fs.readFileSync(path.join(appdata,'bins.json')));
