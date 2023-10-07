@@ -44,9 +44,9 @@ for (let [fn,contents,encoding] of cpm_files) {
     let fp = path.resolve(path.join(appdata,fn));
     if (!fs.existsSync(fp)) {
         if (encoding == 'dir')
-            true || fs.mkdirSync(fp,{recursive:true});
+            false || fs.mkdirSync(fp,{recursive:true});
         else
-            true || fs.writeFileSync(fp,contents,encoding);
+            false || fs.writeFileSync(fp,contents,encoding);
         console.log(`INFO: Created ${fp}`);
     }
 }
