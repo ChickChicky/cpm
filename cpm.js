@@ -57,7 +57,7 @@ if (process.platform == 'win32') {
     if (!fs.existsSync(path.join(appdata,'.bin','cpm.bash'))) fs.writeFileSync(path.join(appdata,'.bin','cpm.bash'),`#!/usr/bin/env bash\nnode ${__filename} $@`,'utf-8');
 }
 
-if (!process.env.path.split(process.platform=='win32'?/;/g:/:/g).some(p=>p==bindir)) console.log(`WARNING: Could not find \`${bindir}\` inside of environment's PATH, some features might not work properly.`);
+if (!process.env.path.split(process.platform=='win32'?/;/g:/:/g).some(p=>p==bindir)) console.log(`\x1b[33mWARNING\x1b[39m: Could not find \`${bindir}\` inside of environment's PATH, some features might not work properly.`);
 
 // Main stuff
 
@@ -313,8 +313,10 @@ else if (args[0] == 'install') {
                 process.stdout.write(` ${installed.includes(package?.id)?'\x1b[36m#\x1b[39m':''} \x1b[35m${p?.id}\x1b[39m \x1b[32m${p?.version}\x1b[39m ${p?.virtual?'\x1b[34m(virtual)\x1b[39m':''}\n`);
             }
             const rl = readline.createInterface(process.stdin,process.stdout);
-            let val = (await rl.question('Install? [Y/n] ')).toLocaleLowerCase()||'y';
-            if (val != 'y') process.exit(0);
+            if (!(flags['yes']||flags['y'])) {
+                let val = (await rl.question('Install? [Y/n] ')).toLocaleLowerCase()||'y';
+                if (val != 'y') process.exit(0);
+            }
             process.stdout.write('\x1b[A\x1b[G\x1b[K'.repeat(dependencies.length+3));
             dependencies.reverse();
             dependencies.push(package);
@@ -361,7 +363,7 @@ else if (args[0] == 'install') {
                 }
                 if (Array.isArray(cfg?.bin)) {
                     for (let bin of cfg.bin) {
-                        if (typeof bin.cmd=='string') if (glob(bin.os??'*').test(sys)) {
+                        if (typeof bin.cmd=='string') if ((bin.os??['*']).some(s=>glob(s).test(sys))) {
                             let bin_name = bin.name+(os.platform()=='win32'?'.bat':'').replace(/\.bat\.bat$/,'.bat');
                             let bin_path = path.resolve(path.join(appdata,'.bin',bin_name));
                             if (fs.existsSync(bin_path)) {
@@ -381,7 +383,7 @@ else if (args[0] == 'install') {
                                 if (cancel) continue;
                             }
                             if (process.platform == 'win32')
-                                fs.writeFileSync(bin_path,`@`+bin.cmd?.replace(/\%package_path\%/g,install_path),'utf-8');
+                                fs.writeFileSync(bin_path,`@echo off\n`+bin.cmd?.replace(/\%package_path\%/g,install_path),'utf-8');
                             else {
                                 fs.writeFileSync(bin_path,'#!/usr/bin/env bash\n'+bin.cmd?.replace(/\%package_path\%/g,install_path),'utf-8');
                                 fs.chmodSync(bin_path,bin.mod??0o744);
@@ -429,7 +431,7 @@ else if (args[0] == 'source') {
         }
         source.push(src);
         fs.writeFileSync(path.join(appdata,'source.json'),JSON.stringify(source),'utf-8');
-        process.exit(1);
+        process.exit(0);
     } else {
         process.stderr.write(`Unknown source action \`${args[1]}\``);
         process.exit(1);
@@ -438,7 +440,7 @@ else if (args[0] == 'source') {
 
 else if (args[0] == 'home') {
     console.log(appdata);
-    process.exit(1);
+    process.exit(0);
 }
 
 else if (args[0] == 'upload') {
@@ -452,7 +454,7 @@ if (!found) {
         process.exit(1);
     } else {
         process.stdout.write(`Please provide a command to run.`);
-        process.exit(0);
+        process.exit(2);
     }
 
 }
